@@ -101,6 +101,18 @@ void PrintError(HRESULT hr) {
 	LocalFree(lpMsgBuf);
 }
 
+void CleanupActivateArray(IMFActivate** activateArray, UINT32 count)
+{
+	if (activateArray != nullptr) {
+		for (UINT32 i = 0; i < count; i++) {
+			if (activateArray[i] != nullptr) {
+				activateArray[i]->Release();
+			}
+		}
+		CoTaskMemFree(activateArray);
+	}
+}
+
 bool WebcamApp::SetupCapture() {
 	ComPtr<IMFAttributes> attributes;
 	HRESULT hr = MFCreateAttributes(&attributes, 1);
@@ -142,28 +154,18 @@ bool WebcamApp::SetupCapture() {
 	hr = activateArray[0]->ActivateObject(IID_PPV_ARGS(&mediaSource));
 	if (FAILED(hr) || count == 0) {
 		std::cerr << "Failed to activate IMFMediaSource." << std::endl;
-		for (UINT32 i = 0; i < count; i++) {
-			activateArray[i]->Release();
-		}
-		CoTaskMemFree(activateArray);
+		CleanupActivateArray(activateArray, count);
 		return false;
 	}
 
 	hr = MFCreateSourceReaderFromMediaSource(mediaSource.Get(), nullptr, &sourceReader);
 	if (FAILED(hr)) {
 		std::cerr << "Failed to create IMFSourceReader from IMFMediaSource." << std::endl;
-		for (UINT32 i = 0; i < count; i++) {
-			activateArray[i]->Release();
-		}
-		CoTaskMemFree(activateArray);
+		CleanupActivateArray(activateArray, count);
 		return false;
 	}
 
-	for (UINT32 i = 0; i < count; i++) {
-		activateArray[i]->Release();
-	}
-
-	CoTaskMemFree(activateArray);
+	CleanupActivateArray(activateArray, count);
 
 	ComPtr<IMFMediaType> mediaType;
 	hr = sourceReader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, &mediaType);
