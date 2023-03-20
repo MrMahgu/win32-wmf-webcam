@@ -414,6 +414,7 @@ void WebcamApp::DestroyBuffers() {
 void WebcamApp::Cleanup() {
 	CleanupNDI();
 	DestroyBuffers();
+	MFShutdown();
 }
 
 int main() {
