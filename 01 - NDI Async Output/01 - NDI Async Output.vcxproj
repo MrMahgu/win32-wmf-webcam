@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)out\$(Platform)\$(Configuration)\out\</OutDir>
-    <IntDir>$(SolutionDir)out\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)out\$(Platform)\$(Configuration)\$(TargetName)\out\</OutDir>
+    <IntDir>$(SolutionDir)out\$(Platform)\$(Configuration)\$(TargetName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
