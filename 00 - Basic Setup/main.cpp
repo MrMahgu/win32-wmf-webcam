@@ -21,6 +21,7 @@ class WebcamApp {
 public:
 	bool Initialize();
 	void Run();
+	void Cleanup();
 private:
 	bool SetupMediaFoundation();
 	bool SetupCapture();
@@ -224,6 +225,10 @@ void WebcamApp::Run() {
 	}
 }
 
+void WebcamApp::Cleanup() {
+	MFShutdown();
+}
+
 int main() {
 	WebcamApp app;
 
@@ -233,6 +238,7 @@ int main() {
 	}
 
 	app.Run();
+	app.Cleanup();
 
 	return 0;
 }
