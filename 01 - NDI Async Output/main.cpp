@@ -6,7 +6,6 @@
 #include <mfidl.h>
 #include <mfreadwrite.h>
 #include <Mferror.h>
-#include <d3d11_4.h>
 #include <wrl/client.h>
 #include <iostream>
 
