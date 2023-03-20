@@ -132,6 +132,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\Processing.NDI.compat.h" />
+    <ClInclude Include="inc\Processing.NDI.deprecated.h" />
+    <ClInclude Include="inc\Processing.NDI.DynamicLoad.h" />
+    <ClInclude Include="inc\Processing.NDI.Find.h" />
+    <ClInclude Include="inc\Processing.NDI.FrameSync.h" />
+    <ClInclude Include="inc\Processing.NDI.Lib.cplusplus.h" />
+    <ClInclude Include="inc\Processing.NDI.Lib.h" />
+    <ClInclude Include="inc\Processing.NDI.Recv.ex.h" />
+    <ClInclude Include="inc\Processing.NDI.Recv.h" />
+    <ClInclude Include="inc\Processing.NDI.Routing.h" />
+    <ClInclude Include="inc\Processing.NDI.Send.h" />
+    <ClInclude Include="inc\Processing.NDI.structs.h" />
+    <ClInclude Include="inc\Processing.NDI.utilities.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
