@@ -337,8 +337,6 @@ void WebcamApp::Run() {
 	BYTE* pScanline0 = nullptr;
 	LONG pitch;
 
-	int index = 0;
-
 	GetSharedTextureHandle();
 
 	while (true) {
@@ -347,9 +345,7 @@ void WebcamApp::Run() {
 		flags = 0;
 		timestamp = 0;
 
-		// Control-C has no cleanup code and I need to exit, lol
-		index++;
-		if (index >= 1000) {
+		if (GetAsyncKeyState(VK_ESCAPE)) {
 			break;
 		}
 

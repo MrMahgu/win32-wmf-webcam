@@ -326,19 +326,15 @@ void WebcamApp::Run() {
 	BYTE* pScanline0 = nullptr;
 	LONG pitch;
 
-	//int index = 0;
-
 	while (true) {
 
 		streamIndex = 0;
 		flags = 0;
 		timestamp = 0;
 
-		// Control-C has no cleanup code and I need to exit, lol
-		//index++;
-		//if (index >= 10000) {
-		//	break;
-		//}
+		if (GetAsyncKeyState(VK_ESCAPE)) {
+			break;
+		}
 
 		HRESULT hr = sourceReader->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &streamIndex, &flags, &timestamp, sample.GetAddressOf());
 		if (FAILED(hr)) {
