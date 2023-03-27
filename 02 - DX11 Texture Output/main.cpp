@@ -324,20 +324,24 @@ void WebcamApp::Run() {
 	LONGLONG timestamp;
 	BYTE* srcData = nullptr;
 	DWORD currentLength;
-	UINT rowBytesYUY2 = width_ * 2;
-	UINT totalBytesYUY2 = height_ * rowBytesYUY2;
 
 	ComPtr<IMF2DBuffer2> pBuffer2D2;
 	ComPtr<IMFMediaBuffer> buffer;
 
 	ComPtr<IMFSample> sample;
 
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-
 	BYTE* pScanline0 = nullptr;
 	LONG pitch;
 
 	GetSharedTextureHandle();
+
+	D3D11_BOX box;
+	box.left = 0;
+	box.right = width_;
+	box.top = 0;
+	box.bottom = height_;
+	box.front = 0;
+	box.back = 1;
 
 	while (true) {
 
@@ -379,18 +383,7 @@ void WebcamApp::Run() {
 					break;
 				}
 
-				hr = context->Map(webcamStagingTexture.Get(), NULL, D3D11_MAP_WRITE, 0, &mappedResource);
-				if (FAILED(hr)) {
-					std::cerr << "Failed to map the webcam staging texture." << std::endl;
-					pBuffer2D2.Reset();
-					break;
-				}
-
-				size_t bufferSize = static_cast<size_t>(height_) * pitch;
-
-				memcpy(mappedResource.pData, pScanline0, bufferSize);
-
-				context->Unmap(webcamStagingTexture.Get(), 0);
+				context->UpdateSubresource(webcamStagingTexture.Get(), 0, &box, pScanline0, pitch, 0);
 
 				pBuffer2D2->Unlock2D();
 
