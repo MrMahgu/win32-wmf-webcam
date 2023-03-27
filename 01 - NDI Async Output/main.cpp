@@ -8,6 +8,9 @@
 #include <Mferror.h>
 #include <wrl/client.h>
 #include <iostream>
+#include <chrono>
+#include <vector>
+#include <execution>
 
 #include "inc/Processing.NDI.Lib.h"
 
@@ -294,18 +297,23 @@ void WebcamApp::CleanupNDI() {
 }
 
 void YUY2ToUYVYWithPitch(const BYTE* srcData, BYTE* destData, UINT width, UINT height, LONG pitch) {
-	for (UINT y = 0; y < height; ++y) {
-		const BYTE* srcRow = srcData + y * pitch;
-		BYTE* destRow = destData + y * width * 2;
+	std::vector<UINT> rowIndices(height);
+	std::iota(rowIndices.begin(), rowIndices.end(), 0);
 
-		for (UINT x = 0; x < width; x += 2) {
-			UINT idx = x * 2;
-			destRow[idx] = srcRow[idx + 1];     // U
-			destRow[idx + 1] = srcRow[idx];     // Y0
-			destRow[idx + 2] = srcRow[idx + 3]; // V
-			destRow[idx + 3] = srcRow[idx + 2]; // Y1
+	std::for_each(std::execution::par, rowIndices.begin(), rowIndices.end(),
+		[&](UINT y) {
+			const BYTE* srcRow = srcData + y * pitch;
+			BYTE* destRow = destData + y * width * 2;
+
+			for (UINT x = 0; x < width; x += 2) {
+				UINT idx = x * 2;
+				destRow[idx] = srcRow[idx + 1];     // U
+				destRow[idx + 1] = srcRow[idx];     // Y0
+				destRow[idx + 2] = srcRow[idx + 3]; // V
+				destRow[idx + 3] = srcRow[idx + 2]; // Y1
+			}
 		}
-	}
+	);
 }
 
 void WebcamApp::Run() {
@@ -325,6 +333,11 @@ void WebcamApp::Run() {
 
 	BYTE* pScanline0 = nullptr;
 	LONG pitch;
+
+	constexpr size_t NUM_RESULTS = 10;
+	std::vector<double> durations(NUM_RESULTS);
+	size_t currentResultIndex = 0;
+	std::chrono::time_point<std::chrono::steady_clock> lastOutputTime = std::chrono::steady_clock::now();
 
 	while (true) {
 
@@ -366,14 +379,21 @@ void WebcamApp::Run() {
 					break;
 				}
 
+				std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
+
 				if (useBuffer0) {
-					YUY2ToUYVYWithPitch(srcData, buffer1_, width_, height_, pitch);
+					parallel_YUY2ToUYVYWithPitch(srcData, buffer1_, width_, height_, pitch);
 					ndi_video_frame_.p_data = buffer2_;
 				}
 				else {
-					YUY2ToUYVYWithPitch(srcData, buffer2_, width_, height_, pitch);
+					parallel_YUY2ToUYVYWithPitch(srcData, buffer2_, width_, height_, pitch);
 					ndi_video_frame_.p_data = buffer1_;
 				}
+
+				std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
+				std::chrono::duration<double> duration = endTime - startTime;
+				durations[currentResultIndex] = duration.count();
+				currentResultIndex = (currentResultIndex + 1) % NUM_RESULTS;
 
 				ndiLib_v5_->send_send_video_async_v2(ndi_sender_, &ndi_video_frame_);
 
@@ -390,6 +410,12 @@ void WebcamApp::Run() {
 			sample.Reset();
 		}
 	}
+
+	for (size_t i = 0; i < NUM_RESULTS; ++i) {
+		std::cout << "Duration " << i + 1 << ": " << durations[i] << " seconds" << std::endl;
+	}
+	std::cout << std::endl;
+
 }
 
 bool WebcamApp::CreateBuffers() {
