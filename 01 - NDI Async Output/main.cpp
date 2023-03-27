@@ -334,7 +334,7 @@ void WebcamApp::Run() {
 	BYTE* pScanline0 = nullptr;
 	LONG pitch;
 
-	constexpr size_t NUM_RESULTS = 10;
+	constexpr size_t NUM_RESULTS = 50;
 	std::vector<double> durations(NUM_RESULTS);
 	size_t currentResultIndex = 0;
 	std::chrono::time_point<std::chrono::steady_clock> lastOutputTime = std::chrono::steady_clock::now();
@@ -345,7 +345,7 @@ void WebcamApp::Run() {
 		flags = 0;
 		timestamp = 0;
 
-		if (GetAsyncKeyState(VK_ESCAPE)) {
+		if (GetAsyncKeyState(VK_F12)) {
 			break;
 		}
 
@@ -382,11 +382,11 @@ void WebcamApp::Run() {
 				std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
 
 				if (useBuffer0) {
-					parallel_YUY2ToUYVYWithPitch(srcData, buffer1_, width_, height_, pitch);
+					YUY2ToUYVYWithPitch(srcData, buffer1_, width_, height_, pitch);
 					ndi_video_frame_.p_data = buffer2_;
 				}
 				else {
-					parallel_YUY2ToUYVYWithPitch(srcData, buffer2_, width_, height_, pitch);
+					YUY2ToUYVYWithPitch(srcData, buffer2_, width_, height_, pitch);
 					ndi_video_frame_.p_data = buffer1_;
 				}
 
@@ -411,11 +411,12 @@ void WebcamApp::Run() {
 		}
 	}
 
+	float totalDuration = 0.0f;
 	for (size_t i = 0; i < NUM_RESULTS; ++i) {
-		std::cout << "Duration " << i + 1 << ": " << durations[i] << " seconds" << std::endl;
+		totalDuration += (float)durations[i];
 	}
-	std::cout << std::endl;
-
+	float averageDuration = totalDuration / NUM_RESULTS;
+	std::cout << "Average Duration: " << averageDuration * 1000 << " ms" << std::endl;
 }
 
 bool WebcamApp::CreateBuffers() {
